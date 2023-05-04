@@ -121,9 +121,30 @@ func InsertAccountBalance(
 		}
 	}
 
-	balance, _ := account.Balance.CoEx()
-	hold, _ := account.Hold.CoEx()
-	available, _ := account.Available.CoEx()
+	balance, err := utils.IonDecimalToBigInt(account.Balance)
+    if err != nil {
+        return fmt.Errorf(
+            "failed account balance update - bad balance: %s - %w",
+            account.Balance.String(),
+            err,
+        )
+    }
+	hold, _ := utils.IonDecimalToBigInt(account.Hold)
+    if err != nil {
+        return fmt.Errorf(
+            "failed account balance update - bad hold: %s - %w",
+            account.Hold.String(),
+            err,
+        )
+    }
+	available, _ := utils.IonDecimalToBigInt(account.Available)
+    if err != nil {
+        return fmt.Errorf(
+            "failed account balance update - bad available: %s - %w",
+            account.Available.String(),
+            err,
+        )
+    }
 	idem := utils.GenerateIdemString(
 		id,
 		balance.String(),

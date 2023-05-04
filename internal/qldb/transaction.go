@@ -25,6 +25,7 @@ import (
 	"github.com/amzn/ion-go/ion"
 	"github.com/awslabs/amazon-qldb-driver-go/v3/qldbdriver"
 	"github.com/coinbase-samples/ib-ledger-go/internal/model"
+	"github.com/coinbase-samples/ib-ledger-go/internal/utils"
 )
 
 func CreateTransactionAndPlaceHold(
@@ -51,7 +52,10 @@ func CreateTransactionAndPlaceHold(
 			if err != nil {
 				return nil, err
 			}
-			available, _ := sender.Available.CoEx()
+			available, err := utils.IonDecimalToBigInt(sender.Available)
+            if err != nil {
+                return nil, err
+            }
 
 			if available.Cmp(amount) == -1 {
 				return nil, &InsufficientBalanceError{}
@@ -107,14 +111,26 @@ func FinalizeTransactionAndReleaseHold(
 				return nil, err
 			}
 
-			txnHoldAmount, _ := t.Hold.Amount.CoEx()
-			holdBalanceUpdate(txn, sender, txnHoldAmount, true)
+			txnHoldAmount, err := utils.IonDecimalToBigInt(t.Hold.Amount)
+            if err != nil {
+                return nil, err
+            }
+
+            err = holdBalanceUpdate(txn, sender, txnHoldAmount, true)
 
 			return nil, err
 		},
     )
 
-	return err
+    if err != nil {
+        return fmt.Errorf(
+            "failed to finalize transaction and release hold - orderId: %s - status: %s - %w",
+            venueOrderId,
+            status,
+            err,
+        )
+    }
+	return nil
 }
 
 func GetTransaction(
