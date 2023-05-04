@@ -22,15 +22,13 @@ DROP INDEX receiver_transactions;
 DROP INDEX transaction_entries;
 DROP INDEX fill_entries;
 DROP INDEX account_entries;
-DROP TABLE entry;
-DROP TABLE finalized_transaction;
-DROP TABLE released_hold;
 DROP TABLE hold;
+DROP TABLE entry;
 DROP TABLE transaction;
 DROP TABLE account_balance;
 DROP TABLE account;
-DROP TYPE direction;
-DROP TYPE ttype;
+DROP TYPE DIRECTION;
+DROP TYPE TRANSACTION_TYPE;
 DROP TYPE TRANSACTION_STATUS;
 
 DROP EXTENSION "uuid-ossp";

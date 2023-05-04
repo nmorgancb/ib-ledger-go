@@ -98,8 +98,7 @@ func (q *QldbTransaction) ConvertToPostgresTransaction() (*Transaction, error) {
 	id, err := uuid.Parse(q.VenueOrderId)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed conversion to postgres transaction - "+
-				"bad orderId: %s - err: %w",
+			"failed conversion to postgres transaction - bad orderId: %s - err: %w",
 			q.VenueOrderId,
 			err,
 		)
@@ -107,8 +106,7 @@ func (q *QldbTransaction) ConvertToPostgresTransaction() (*Transaction, error) {
 	senderId, err := uuid.Parse(q.Sender.AccountUUID)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed conversion to postgres transaction - "+
-				"bad senderId: %s - err: %w",
+			"failed conversion to postgres transaction - bad senderId: %s - err: %w",
 			q.Sender.AccountUUID,
 			err,
 		)
@@ -116,8 +114,7 @@ func (q *QldbTransaction) ConvertToPostgresTransaction() (*Transaction, error) {
 	receiverId, err := uuid.Parse(q.Receiver.AccountUUID)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed conversion to postgres transaction - "+
-				"bad receiverId: %s - err: %w",
+			"failed conversion to postgres transaction - bad receiverId: %s - err: %w",
 			q.Receiver.AccountUUID,
 			err,
 		)
@@ -145,8 +142,7 @@ func (q *QldbCoreAccount) ConvertToPostgresAccount() (*Account, error) {
 	id, err := uuid.Parse(q.AccountUUID)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"unable to convert to postgres account - "+
-				"bad accountId: %s - err: %w",
+			"unable to convert to postgres account - bad accountId: %s - err: %w",
 			q.AccountUUID,
 			err,
 		)
@@ -154,8 +150,7 @@ func (q *QldbCoreAccount) ConvertToPostgresAccount() (*Account, error) {
 	userId, err := uuid.Parse(q.UserId)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"unable to convert to postgres account - "+
-				"bad userId: %s - err: %w",
+			"unable to convert to postgres account - bad userId: %s - err: %w",
 			q.UserId,
 			err,
 		)

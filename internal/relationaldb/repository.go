@@ -36,20 +36,26 @@ type Repository struct {
 
 type DbManager interface {
 	Query(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Insert(ctx context.Context, sql string, arguments ...interface{}) error
+	Insert(ctx context.Context, sql string, args ...interface{}) error
 }
 
 func NewRepo(a *config.AppConfig, l *log.Entry) {
 	var dbCredsJson map[string]interface{}
 	err := json.Unmarshal([]byte(a.DbCreds), &dbCredsJson)
 	if err != nil {
-		l.Fatalf("unable to unmarshal the cred string")
+		l.Fatal("unable to unmarshal the database credentials string")
 	}
 
 	dbUsername := dbCredsJson["username"].(string)
 	dbPassword := url.QueryEscape(dbCredsJson["password"].(string))
 
-	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/ledger", dbUsername, dbPassword, a.DbHostname, a.DbPort)
+	dbUrl := fmt.Sprintf(
+        "postgres://%s:%s@%s:%s/ledger", 
+        dbUsername,
+        dbPassword,
+        a.DbHostname,
+        a.DbPort,
+    )
 
 	if a.IsLocalEnv() {
 		dbUrl += "?sslmode=disable"
@@ -65,11 +71,20 @@ func NewRepo(a *config.AppConfig, l *log.Entry) {
 	}
 }
 
-func (r *Repository) Query(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (r *Repository) Query(
+    ctx context.Context, 
+    dest interface{}, 
+    query string, 
+    args ...interface{},
+) error {
 	return pgxscan.Select(ctx, r.Pool, dest, query, args...)
 }
 
-func (r *Repository) Insert(ctx context.Context, sql string, arguments ...interface{}) error {
-	_, err := r.Pool.Exec(ctx, sql, arguments...)
+func (r *Repository) Insert(
+    ctx context.Context, 
+    sql string, 
+    args ...interface{},
+) error {
+	_, err := r.Pool.Exec(ctx, sql, args...)
 	return err
 }

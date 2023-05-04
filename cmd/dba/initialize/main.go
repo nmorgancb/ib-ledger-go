@@ -21,10 +21,12 @@ import (
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+    "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/qldbsession"
 	"github.com/awslabs/amazon-qldb-driver-go/v3/qldbdriver"
 	"github.com/coinbase-samples/ib-ledger-go/internal/config"
 	"github.com/coinbase-samples/ib-ledger-go/internal/model"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -34,6 +36,20 @@ func main() {
 	logrusLogger := config.LogInit(app)
 
 	cfg := app.GenerateAwsConfig(logrusLogger)
+
+    driver := initializeQldbDriver(logrusLogger, app, cfg)
+    defer driver.Shutdown(context.Background())
+
+    initializeLedgerTable(logrusLogger, driver)
+
+    initializeAccountTableAndFeeAccounts(logrusLogger, driver, &app)
+}
+
+func initializeQldbDriver(
+    l *log.Entry,
+    app config.AppConfig, 
+    cfg aws.Config,
+) *qldbdriver.QLDBDriver {
 	qldbSession := qldbsession.NewFromConfig(cfg, func(options *qldbsession.Options) {
 		options.Region = app.DevRegion
 	})
@@ -42,13 +58,15 @@ func main() {
 		qldbSession,
 		func(options *qldbdriver.DriverOptions) {
 			options.LoggerVerbosity = qldbdriver.LogInfo
-		})
+		},
+    )
 	if err != nil {
-		logrusLogger.Fatalf("failed to create qldbdriver: %v", err)
+		l.Fatalf("failed to create qldbdriver: %v", err)
 	}
+    return driver
+}
 
-	defer driver.Shutdown(context.Background())
-
+func initializeLedgerTable(l *log.Entry, driver *qldbdriver.QLDBDriver) {
 	if _, err := driver.Execute(
 		context.Background(),
 		func(txn qldbdriver.Transaction) (interface{}, error) {
@@ -64,7 +82,7 @@ func main() {
 				return nil, err
 			}
 
-			if _, err = txn.Execute(
+            if _, err := txn.Execute(
 				"CREATE INDEX ON Ledger (venueOrderId)",
 			); err != nil {
 				return nil, err
@@ -86,9 +104,15 @@ func main() {
 			return nil, err
 		},
 	); err != nil {
-		logrusLogger.Fatalf("failed to create Ledger table: %v", err)
+		l.Fatalf("failed to create Ledger table: %v", err)
 	}
+}
 
+func initializeAccountTableAndFeeAccounts(
+    l *log.Entry,
+    driver *qldbdriver.QLDBDriver,
+    app *config.AppConfig,
+) {
 	coinbaseUsdFeeAccount := &model.QldbAccount{
 		Id:          model.GenerateAccountId(app.CoinbaseUserId, "USD"),
 		UserId:      app.CoinbaseUserId,
@@ -130,7 +154,7 @@ func main() {
 				return nil, err
 			}
 
-			_, err = txn.Execute(
+            _, err := txn.Execute(
 				"INSERT INTO Accounts ?",
 				[]*model.QldbAccount{
 					coinbaseUsdFeeAccount,
@@ -141,6 +165,6 @@ func main() {
 			return nil, err
 		},
 	); err != nil {
-		logrusLogger.Fatalf("failed to create Accounts table: %v", err)
+		l.Fatalf("failed to create Accounts table: %v", err)
 	}
 }

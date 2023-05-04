@@ -62,27 +62,33 @@ func setupGrpcOptions(app config.AppConfig, l *log.Entry) []grpc.ServerOption {
 	// Logrus entry is used, allowing pre-definition of certain fields by the user.
 	// See example setup here https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/logging/logrus/examples_test.go
 	opts := []grpcLogrus.Option{
-		grpcLogrus.WithDurationField(func(duration time.Duration) (key string, value interface{}) {
-			return "grpc.time_ns", duration.Nanoseconds()
-		}),
-		grpcLogrus.WithDecider(func(fullMethodName string, err error) bool {
-			// will not log gRPC calls if it was a call to healthcheck and no error was raised
-			if err == nil && fullMethodName == "/grpc.health.v1.Health/Check" {
-				return false
-			}
+		grpcLogrus.WithDurationField(
+			func(duration time.Duration) (key string, value interface{}) {
+				return "grpc.time_ns", duration.Nanoseconds()
+			},
+		),
+		grpcLogrus.WithDecider(
+			func(fullMethodName string, err error) bool {
+				// will not log gRPC calls if it was a call to healthcheck and no error was raised
+				if err == nil && fullMethodName == "/grpc.health.v1.Health/Check" {
+					return false
+				}
 
-			// by default everything will be logged
-			return true
-		}),
+				// by default everything will be logged
+				return true
+			},
+		),
 	}
 
 	grpcOptions := []grpc.ServerOption{
-		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
-			grpcCtxtags.UnaryServerInterceptor(),
-			grpcLogrus.UnaryServerInterceptor(l, opts...),
-			grpcValidator.UnaryServerInterceptor(),
-			grpcRecovery.UnaryServerInterceptor(),
-		)),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				grpcCtxtags.UnaryServerInterceptor(),
+				grpcLogrus.UnaryServerInterceptor(l, opts...),
+				grpcValidator.UnaryServerInterceptor(),
+				grpcRecovery.UnaryServerInterceptor(),
+			),
+		),
 	}
 
 	if !app.IsLocalEnv() {
@@ -101,7 +107,10 @@ func setupGrpcOptions(app config.AppConfig, l *log.Entry) []grpc.ServerOption {
 func setupHealthCheckServer(s *grpc.Server) {
 	//setup health server
 	hs := health.NewServer()
-	hs.SetServingStatus("grpc.health.v1.Health", grpc_health_v1.HealthCheckResponse_SERVING)
+	hs.SetServingStatus(
+        "grpc.health.v1.Health", 
+        grpc_health_v1.HealthCheckResponse_SERVING,
+    )
 	grpc_health_v1.RegisterHealthServer(s, hs)
 }
 

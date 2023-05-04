@@ -36,15 +36,15 @@ const (
 func CreateAccountAndInitializeBalance(
 	ctx context.Context,
 	userId, currency string,
-	initialBalance *big.Int) error {
+	initialBalance *big.Int,
+) error {
 	_, err := Repo.Driver.Execute(ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			accountId := model.GenerateAccountId(userId, currency)
 			result, err := txn.Execute(selectAccountSql, accountId)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"failed to select account - "+
-						"id: %s - userId: %s - currency: %s - err: %w",
+					"failed to select account - id: %s - userId: %s - currency: %s - err: %w",
 					accountId,
 					userId,
 					currency,
@@ -70,8 +70,7 @@ func CreateAccountAndInitializeBalance(
 			_, err = txn.Execute("INSERT INTO Accounts ?", a)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"failed to insert account - "+
-						"userId: %s - currency: %s - err: %w",
+					"failed to insert account - userId: %s - currency: %s - err: %w",
 					userId,
 					currency,
 					err,
@@ -79,7 +78,8 @@ func CreateAccountAndInitializeBalance(
 			}
 
 			return nil, nil
-		})
+		},
+	)
 
 	return err
 }
@@ -92,8 +92,7 @@ func getAccountQldbTransaction(
 	result, err := txn.Execute(selectAccountSql, accountId)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to execute get account transaction"+
-				" - accountId: %s - error: %w",
+			"failed to execute get account transaction - accountId: %s - error: %w",
 			accountId,
 			err,
 		)
@@ -102,8 +101,7 @@ func getAccountQldbTransaction(
 		if err := ion.Unmarshal(
 			result.GetCurrentData(), &account); err != nil {
 			return nil, fmt.Errorf(
-				"failed to unmarshal account data"+
-					" - accountId: %s - error: %w",
+				"failed to unmarshal account data - accountId: %s - error: %w",
 				accountId,
 				err,
 			)
@@ -115,8 +113,7 @@ func getAccountQldbTransaction(
 	}
 	if result.Err() != nil {
 		return nil, fmt.Errorf(
-			"failed to get account result"+
-				" - accountId: %s - error: %w",
+			"failed to get account result - accountId: %s - error: %w",
 			accountId,
 			err,
 		)
@@ -127,7 +124,8 @@ func getAccountQldbTransaction(
 func creditAccountUpdate(
 	txn qldbdriver.Transaction,
 	account *model.QldbAccount,
-	amount *big.Int) error {
+	amount *big.Int,
+) error {
 	balance, err := utils.IonDecimalToBigInt(account.Balance)
 	if err != nil {
 		return err
@@ -153,7 +151,8 @@ func creditAccountUpdate(
 		ion.NewDecimal(balance, 0, false),
 		ion.NewDecimal(available, 0, false),
 		time.Now(),
-		account.Id)
+		account.Id,
+    )
 	return err
 }
 
@@ -162,14 +161,13 @@ func debitAccountUpdate(
 	account *model.QldbAccount,
 	amount *big.Int,
 	commission *big.Int,
-	feeAmount *big.Int) error {
+	feeAmount *big.Int,
+) error {
 
 	hold, err := utils.IonDecimalToBigInt(account.Hold)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to update debit account balance "+
-				"- unable to convert hold decimal to int "+
-				"- accountId: %s - error: %w",
+			"failed to update debit account balance - accountId: %s - error: %w",
 			account.Id,
 			err,
 		)
@@ -182,9 +180,7 @@ func debitAccountUpdate(
 	balance, err := utils.IonDecimalToBigInt(account.Balance)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to update debit account balance "+
-				"- unable to convert balance decimal to int "+
-				"- accountId: %s - error: %w",
+			"failed to update debit account balance - accountId: %s - error: %w",
 			account.Id,
 			err,
 		)
@@ -219,14 +215,13 @@ func holdBalanceUpdate(
 	txn qldbdriver.Transaction,
 	account *model.QldbAccount,
 	amount *big.Int,
-	isSub bool) error {
+	isSub bool,
+) error {
 
 	hold, err := utils.IonDecimalToBigInt(account.Hold)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to update credit account balance "+
-				"- unable to convert hold decimal to int "+
-				"- accountId: %s - error: %w",
+			"failed to update credit account balance - accountId: %s - error: %w",
 			account.Id,
 			err,
 		)
@@ -241,9 +236,7 @@ func holdBalanceUpdate(
 	balance, err := utils.IonDecimalToBigInt(account.Balance)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to update credit account balance "+
-				"- unable to convert balance decimal to int "+
-				"- accountId: %s - error: %w",
+			"failed to update credit account balance - accountId: %s - error: %w",
 			account.Id,
 			err,
 		)
@@ -252,9 +245,7 @@ func holdBalanceUpdate(
 	available, err := utils.IonDecimalToBigInt(account.Available)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to update credit account balance "+
-				"- unable to convert available decimal to int "+
-				"- accountId: %s - error: %w",
+			"failed to update credit account balance - accountId: %s - error: %w",
 			account.Id,
 			err,
 		)

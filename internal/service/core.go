@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -33,7 +34,8 @@ import (
 
 func (s *Service) InitializeAccount(
 	ctx context.Context,
-	req *api.InitializeAccountRequest) (*api.InitializeAccountResponse, error) {
+	req *api.InitializeAccountRequest,
+) (*api.InitializeAccountResponse, error) {
 	l := ctxlogrus.Extract(ctx)
 
 	if err := req.ValidateAll(); err != nil {
@@ -49,8 +51,7 @@ func (s *Service) InitializeAccount(
 		if err := utils.SetString(initialBalance, req.InitialBalance); err != nil {
 			return nil, status.Errorf(
 				codes.InvalidArgument,
-				"failed to convert TotalAmount to int - "+
-					"userId: %s - currency: %s - err: %w",
+				"failed to convert TotalAmount to int - userId: %s - currency: %s - err: %w",
 				req.UserId,
 				req.Currency,
 				err,
@@ -62,7 +63,8 @@ func (s *Service) InitializeAccount(
 		ctx,
 		strings.ToLower(req.UserId),
 		strings.ToUpper(req.Currency),
-		initialBalance)
+		initialBalance,
+	)
 	if err != nil {
 		return nil, handleTransactionErrors(err)
 	}
@@ -73,7 +75,8 @@ func (s *Service) InitializeAccount(
 
 func (s *Service) GetAccounts(
 	ctx context.Context,
-	req *api.GetAccountsRequest) (*api.GetAccountsResponse, error) {
+	req *api.GetAccountsRequest,
+) (*api.GetAccountsResponse, error) {
 	l := ctxlogrus.Extract(ctx)
 
 	if err := req.ValidateAll(); err != nil {
@@ -89,18 +92,54 @@ func (s *Service) GetAccounts(
 	var outputResults []*api.AccountAndBalance
 
 	for _, r := range results {
-		balance, _ := r.Balance.CoEx()
-		hold, _ := r.Hold.CoEx()
-		available, _ := r.Available.CoEx()
+		balance, err := utils.IonDecimalToBigInt(r.Balance)
+		if err != nil {
+			return nil, handleValidationError(
+				fmt.Errorf(
+					"bad balance in account balance result - id: %s - val: %s - %w",
+					r.Id,
+					r.Balance.String(),
+					err,
+				),
+			)
+		}
+
+		hold, err := utils.IonDecimalToBigInt(r.Hold)
+		if err != nil {
+			return nil, handleValidationError(
+				fmt.Errorf(
+					"bad hold in account balance result - id: %s - val: %s - %w",
+					r.Id,
+					r.Hold.String(),
+					err,
+				),
+			)
+		}
+
+		available, err := utils.IonDecimalToBigInt(r.Available)
+		if err != nil {
+			return nil, handleValidationError(
+				fmt.Errorf(
+					"bad available in account balance result - id: %s - val: %s - %w",
+					r.Id,
+					r.Available.String(),
+					err,
+				),
+			)
+		}
+
 		time := r.UpdatedAt
-		outputResults = append(outputResults, &api.AccountAndBalance{
-			AccountId: r.Id,
-			Currency:  r.Currency,
-			Balance:   balance.String(),
-			Hold:      hold.String(),
-			Available: available.String(),
-			BalanceAt: timestamppb.New(time),
-		})
+		outputResults = append(
+			outputResults,
+			&api.AccountAndBalance{
+				AccountId: r.Id,
+				Currency:  r.Currency,
+				Balance:   balance.String(),
+				Hold:      hold.String(),
+				Available: available.String(),
+				BalanceAt: timestamppb.New(time),
+			},
+		)
 	}
 
 	return &api.GetAccountsResponse{Accounts: outputResults}, nil

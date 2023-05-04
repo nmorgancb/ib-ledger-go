@@ -50,9 +50,11 @@ const (
 	deleteEntrySql = `DELETE FROM entry WHERE id = $1`
 )
 
-func InsertTransaction(ctx context.Context,
+func InsertTransaction(
+	ctx context.Context,
 	t *model.Transaction,
-	sender, receiver *model.Account) error {
+	sender, receiver *model.Account,
+) error {
 	if err := checkIfAccountExistsCreateIfNotFound(
 		ctx,
 		sender,
@@ -137,8 +139,7 @@ func UpsertHold(ctx context.Context, hold *model.Hold) error {
 		hold.ReleasedAt,
 		hold.Released,
 	); err != nil {
-		return fmt.Errorf("unable to upsert hold "+
-			"- holdId: %s - transactionId: %s - %w",
+		return fmt.Errorf("unable to upsert hold - holdId: %s - transactionId: %s - %w",
 			hold.Id.String(),
 			hold.VenueOrderId.String(),
 			err,
@@ -147,16 +148,21 @@ func UpsertHold(ctx context.Context, hold *model.Hold) error {
 	return nil
 }
 
-func checkIfAccountExistsCreateIfNotFound(ctx context.Context, a *model.Account) error {
+func checkIfAccountExistsCreateIfNotFound(
+	ctx context.Context,
+	a *model.Account,
+) error {
 	var retrievedId []*string
 	if err := Repo.Query(ctx,
 		&retrievedId,
 		selectAccountById,
-		a.Id.String()); err != nil {
+		a.Id.String(),
+	); err != nil {
 		return fmt.Errorf(
 			"failed to retrieve account - id: %s - %w",
 			a.Id.String(),
-			err)
+			err,
+		)
 	}
 
 	// If first attempt doesn't find an accountId, create the new account

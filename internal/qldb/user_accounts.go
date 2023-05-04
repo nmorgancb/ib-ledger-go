@@ -31,8 +31,11 @@ const (
 )
 
 func GetUserAccounts(
-	ctx context.Context, userId string) ([]*model.QldbAccount, error) {
-	data, err := Repo.Driver.Execute(ctx,
+	ctx context.Context, 
+    userId string,
+) ([]*model.QldbAccount, error) {
+	data, err := Repo.Driver.Execute(
+        ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			result, err := txn.Execute(getAccountsByUserIdSql, userId)
 			if err != nil {
@@ -54,11 +57,11 @@ func GetUserAccounts(
 				output = append(output, temp)
 			}
 			return output, nil
-		})
+		},
+    )
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to get accounts by userId from qldb "+
-				"- userId: %s - %w",
+			"failed to get accounts by userId from qldb - userId: %s - %w",
 			userId,
 			err,
 		)
@@ -75,11 +78,13 @@ func GetUserAccounts(
 
 func GetAccount(
 	ctx context.Context,
-	accountId string) (*model.QldbAccount, error) {
+	accountId string,
+) (*model.QldbAccount, error) {
 	var res interface{}
 	var err error
 
-	res, err = Repo.Driver.Execute(ctx,
+	res, err = Repo.Driver.Execute(
+        ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			result, err := txn.Execute(getAccountByIdSql, accountId)
 			if err != nil {
@@ -104,7 +109,8 @@ func GetAccount(
 			}
 
 			return acct, err
-		})
+		},
+    )
 
 	if err != nil {
 		return nil, fmt.Errorf(

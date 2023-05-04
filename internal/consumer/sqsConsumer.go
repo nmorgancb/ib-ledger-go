@@ -36,9 +36,8 @@ import (
 )
 
 func Listen(l *log.Entry) {
-	ctx := context.Background()
 	for {
-
+		ctx := context.Background()
 		message, err := Repo.ReceiveSqsMsg(ctx, 90)
 
 		if err != nil {
@@ -51,7 +50,10 @@ func Listen(l *log.Entry) {
 			continue
 		}
 
-		if err := onMessage(ctx, message.Body); err != nil {
+		if err := onMessage(
+			ctx,
+			message.Body,
+		); err != nil {
 			time.Sleep(500 * time.Millisecond)
 			l.Error(err)
 			continue
@@ -95,7 +97,9 @@ func onMessage(ctx context.Context, body *string) error {
 	return nil
 }
 
-func getKinesisEncryptionType(kinesisEvent events.KinesisRecord) types.EncryptionType {
+func getKinesisEncryptionType(
+	kinesisEvent events.KinesisRecord,
+) types.EncryptionType {
 	if kinesisEvent.EncryptionType == "KMS" {
 		return types.EncryptionTypeKms
 	}
@@ -106,19 +110,28 @@ func getLedgerType(reader ion.Reader) (string, error) {
 	for reader.Next() {
 		annotations, err := reader.Annotations()
 		if err != nil {
-			return "", fmt.Errorf("unable to get annotations from ion blob: %w", err)
+			return "", fmt.Errorf(
+				"unable to get annotations from ion blob: %w",
+				err,
+			)
 		}
 		if annotations == nil && reader.Type() == ion.StructType {
 			reader.StepIn()
 			for reader.Next() {
 				fieldName, err := reader.FieldName()
 				if err != nil {
-					return "", fmt.Errorf("unable to extract field name from ion node in ledger blob: %w", err)
+					return "", fmt.Errorf(
+						"unable to extract field name from ion node in ledger blob: %w",
+						err,
+					)
 				}
 				if *fieldName.Text == "id" {
 					id, err := reader.StringValue()
 					if err != nil {
-						return "", fmt.Errorf("unable to parse string from Id field: %w", err)
+						return "", fmt.Errorf(
+							"unable to parse string from Id field: %w",
+							err,
+						)
 					}
 					return *id, nil
 				}
@@ -167,10 +180,16 @@ func handleRecordData(ctx context.Context, blob []byte) error {
 func handleQldbAccount(ctx context.Context, data []byte) error {
 	var a *model.QldbAccount
 	if err := ion.Unmarshal(data, &a); err != nil {
-		return fmt.Errorf("unable to unmarshal account blob into struct: %w", err)
+		return fmt.Errorf(
+			"unable to unmarshal account blob into struct: %w",
+			err,
+		)
 	}
 	if err := relationaldb.InsertAccountBalance(ctx, a); err != nil {
-		return fmt.Errorf("unable to insert account balance into database: %w", err)
+		return fmt.Errorf(
+			"unable to insert account balance into database: %w",
+			err,
+		)
 	}
 	return nil
 }
@@ -196,10 +215,16 @@ func handleLedgerTableTypes(ctx context.Context, data []byte) error {
 func handleQldbTransaction(ctx context.Context, data []byte) error {
 	var t *model.QldbTransaction
 	if err := ion.Unmarshal(data, &t); err != nil {
-		return fmt.Errorf("unable to unmarshal transaction from data: %w", err)
+		return fmt.Errorf(
+			"unable to unmarshal transaction from data: %w",
+			err,
+		)
 	}
 	if err := writeQldbTransaction(ctx, t); err != nil {
-		return fmt.Errorf("unable to write Transaction to database: %w", err)
+		return fmt.Errorf(
+			"unable to write Transaction to database: %w",
+			err,
+		)
 	}
 	return nil
 }

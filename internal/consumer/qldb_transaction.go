@@ -38,7 +38,8 @@ func writeQldbTransaction(ctx context.Context, t *model.QldbTransaction) error {
 		return fmt.Errorf(
 			"unable to convert QldbCoreAccount: %v to Postgres Account: %w",
 			t.Sender,
-			err)
+			err,
+        )
 	}
 
 	receiverAccount, err := t.Receiver.ConvertToPostgresAccount()
@@ -46,7 +47,8 @@ func writeQldbTransaction(ctx context.Context, t *model.QldbTransaction) error {
 		return fmt.Errorf(
 			"unable to convert QldbCoreAccount: %v to Postgres Account: %w",
 			t.Receiver,
-			err)
+			err,
+        )
 	}
 	if err := relationaldb.InsertTransaction(
 		ctx,
@@ -55,7 +57,9 @@ func writeQldbTransaction(ctx context.Context, t *model.QldbTransaction) error {
 		receiverAccount,
 	); err != nil {
 		return fmt.Errorf(
-			"unable to insert transaction to postgres database: %w", err)
+			"unable to insert transaction to postgres database: %w",
+            err,
+        )
 	}
 
 	holdAmount, err := utils.IonDecimalToBigInt(t.Hold.Amount)

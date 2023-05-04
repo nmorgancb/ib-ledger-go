@@ -30,14 +30,16 @@ import (
 func CreateTransactionAndPlaceHold(
 	ctx context.Context,
 	t *model.QldbTransaction,
-	amount *big.Int) error {
-	_, err := Repo.Driver.Execute(ctx,
+	amount *big.Int,
+) error {
+	_, err := Repo.Driver.Execute(
+		ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			// Check to make sure Transaction wasn't already written
-			result, err := txn.Execute(`
-            SELECT * 
-            FROM Ledger 
-            WHERE id = ?`, t.Id)
+			result, err := txn.Execute(
+				"SELECT * FROM Ledger WHERE id = ?",
+				t.Id,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -70,8 +72,11 @@ func CreateTransactionAndPlaceHold(
 	return err
 }
 
-func FinalizeTransactionAndReleaseHold(venueOrderId, status string) error {
-	_, err := Repo.Driver.Execute(context.Background(),
+func FinalizeTransactionAndReleaseHold(
+	ctx context.Context,
+	venueOrderId, status string) error {
+	_, err := Repo.Driver.Execute(
+		ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			// Retrieve transaction
 			t, err := getTransactionQldbOperation(txn, venueOrderId)
@@ -91,10 +96,12 @@ func FinalizeTransactionAndReleaseHold(venueOrderId, status string) error {
 				Released:   true,
 				HoldUUID:   t.Hold.HoldUUID,
 			}
-			_, err = txn.Execute(`
-        UPDATE Ledger AS t 
-        SET t.hold = ?, t.status = ? 
-        WHERE t.id = ?`, h, status, t.Id)
+			_, err = txn.Execute(
+                "UPDATE Ledger AS t SET t.hold = ?, t.status = ? WHERE t.id = ?",
+				h,
+				status,
+				t.Id,
+			)
 
 			if err != nil {
 				return nil, err
@@ -104,7 +111,8 @@ func FinalizeTransactionAndReleaseHold(venueOrderId, status string) error {
 			holdBalanceUpdate(txn, sender, txnHoldAmount, true)
 
 			return nil, err
-		})
+		},
+    )
 
 	return err
 }
@@ -116,35 +124,37 @@ func GetTransaction(
 	data, err := Repo.Driver.Execute(ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			return getTransactionQldbOperation(txn, venueOrderId)
-		})
+		},
+    )
 	if err != nil {
 		return nil, err
 	}
-	transaction, ok := data.(*model.QldbTransaction)
-	if !ok {
-		return nil,
-			fmt.Errorf("unable to cast data to transaction type: %v", data)
+	if transaction, ok := data.(*model.QldbTransaction); ok {
+		return transaction, nil
+	} else {
+		return nil, fmt.Errorf(
+            "unable to cast data to transaction type: %v",
+            data,
+        )
 	}
-	return transaction, nil
 }
 
 func getTransactionQldbOperation(
 	txn qldbdriver.Transaction,
-	venueOrderId string) (*model.QldbTransaction, error) {
+	venueOrderId string,
+) (*model.QldbTransaction, error) {
 	txnId := model.GenerateTransactionId(venueOrderId)
 	result, err := txn.Execute("SELECT * FROM Ledger WHERE id = ?", txnId)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to execute get transaction"+
-				" - transactionId: %s - error: %w",
+			"failed to execute get transaction - transactionId: %s - error: %w",
 			venueOrderId,
 			err,
 		)
 	}
 	if !result.Next(txn) {
 		return nil, fmt.Errorf(
-			"failed to get result from get transaction"+
-				"- transactionId: %s - err: %w",
+			"failed to get result from get transaction - transactionId: %s - err: %w",
 			venueOrderId,
 			err,
 		)
@@ -153,8 +163,7 @@ func getTransactionQldbOperation(
 	t := new(model.QldbTransaction)
 	if err := ion.Unmarshal(result.GetCurrentData(), &t); err != nil {
 		return nil, fmt.Errorf(
-			"failed to unmarshal transaction result"+
-				" - transactionId: %s - err: %w",
+			"failed to unmarshal transaction result - transactionId: %s - err: %w",
 			venueOrderId,
 			err,
 		)

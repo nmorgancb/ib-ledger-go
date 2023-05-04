@@ -93,8 +93,7 @@ func InsertAccountBalance(
 		id,
 	); err != nil {
 		return fmt.Errorf(
-			"failed to retrieve account "+
-				"- accountId: %s - userId: %s - currency: %s - %w",
+			"failed to retrieve account - accountId: %s - userId: %s - currency: %s - %w",
 			id,
 			userId,
 			currency,
@@ -113,8 +112,7 @@ func InsertAccountBalance(
 			currency,
 		); err != nil {
 			return fmt.Errorf(
-				"failed to create account "+
-					"- accountId: %s - userId: %s - currency: %s - %w",
+				"failed to create account - accountId: %s - userId: %s - currency: %s - %w",
 				id,
 				userId,
 				currency,
@@ -131,7 +129,8 @@ func InsertAccountBalance(
 		balance.String(),
 		hold.String(),
 		available.String(),
-		account.UpdatedAt.String())
+		account.UpdatedAt.String(),
+    )
 
 	if err := Repo.Insert(
 		ctx,

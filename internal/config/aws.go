@@ -36,16 +36,27 @@ func (app AppConfig) GenerateAwsConfig(l *log.Entry) aws.Config {
 	} else if app.IsLocalEnv() {
 		cfg, err = awsConfig.LoadDefaultConfig(context.Background(),
 			awsConfig.WithRegion(app.DevRegion),
-			awsConfig.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
-				func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-					return aws.Endpoint{URL: app.LocalStackUrl}, nil
-				})),
-			awsConfig.WithCredentialsProvider(credentials.StaticCredentialsProvider{
-				Value: aws.Credentials{
-					AccessKeyID: "dummy", SecretAccessKey: "dummy", SessionToken: "dummy",
-					Source: "Hard-coded credentials; values are irrelevant for local DynamoDB",
+			awsConfig.WithEndpointResolverWithOptions(
+				aws.EndpointResolverWithOptionsFunc(
+					func(
+						service,
+						region string,
+						options ...interface{},
+					) (aws.Endpoint, error) {
+						return aws.Endpoint{URL: app.LocalStackUrl}, nil
+					},
+                ),
+            ),
+			awsConfig.WithCredentialsProvider(
+				credentials.StaticCredentialsProvider{
+					Value: aws.Credentials{
+						AccessKeyID:     "dummy",
+						SecretAccessKey: "dummy",
+						SessionToken:    "dummy",
+						Source:          "Hard-coded credentials; values are irrelevant for local DynamoDB",
+					},
 				},
-			}),
+			),
 		)
 	} else {
 		cfg, err = awsConfig.LoadDefaultConfig(context.Background())

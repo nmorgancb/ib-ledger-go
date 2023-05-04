@@ -36,7 +36,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) CreateTransaction(ctx context.Context, req *api.CreateTransactionRequest) (*api.CreateTransactionResponse, error) {
+func (s *Service) CreateTransaction(
+	ctx context.Context,
+	req *api.CreateTransactionRequest,
+) (*api.CreateTransactionResponse, error) {
 	l := ctxlogrus.Extract(ctx)
 
 	if err := req.ValidateAll(); err != nil {
@@ -62,8 +65,7 @@ func (s *Service) CreateTransaction(ctx context.Context, req *api.CreateTransact
 		); err != nil {
 			return nil, status.Errorf(
 				codes.InvalidArgument,
-				"failed to convert TotalAmount to int - "+
-					"transaction: %s - err: %w",
+				"failed to convert TotalAmount to int - transaction: %s - err: %w",
 				req.OrderId,
 				err,
 			)
@@ -143,7 +145,8 @@ func (s *Service) CreateTransaction(ctx context.Context, req *api.CreateTransact
 
 func (s *Service) PostFill(
 	ctx context.Context,
-	req *api.PostFillRequest) (*api.PostFillResponse, error) {
+	req *api.PostFillRequest,
+) (*api.PostFillResponse, error) {
 	l := ctxlogrus.Extract(ctx)
 
 	if err := req.ValidateAll(); err != nil {
@@ -173,22 +176,35 @@ func (s *Service) FinalizeTransaction(
 	switch req.FinalizedStatus {
 	case api.TransactionStatus_TRANSACTION_STATUS_COMPLETE:
 		if err := qldb.FinalizeTransactionAndReleaseHold(
-			venueOrderId, config.TransactionStatusFilled); err != nil {
+			ctx,
+			venueOrderId,
+			config.TransactionStatusFilled,
+		); err != nil {
 			return nil, handleTransactionErrors(err)
 		}
 	case api.TransactionStatus_TRANSACTION_STATUS_FAILED:
 		if err := qldb.FinalizeTransactionAndReleaseHold(
-			venueOrderId, config.TransactionStatusFailed); err != nil {
+			ctx,
+			venueOrderId,
+			config.TransactionStatusFailed,
+		); err != nil {
 			return nil, handleTransactionErrors(err)
 		}
 	case api.TransactionStatus_TRANSACTION_STATUS_CANCELED:
 		if err := qldb.FinalizeTransactionAndReleaseHold(
-			venueOrderId, config.TransactionStatusCanceled); err != nil {
+			ctx,
+			venueOrderId,
+			config.TransactionStatusCanceled,
+		); err != nil {
 			return nil, handleTransactionErrors(err)
 		}
 	default:
 		return nil, handleValidationError(
-			fmt.Errorf("unknown status: %s", req.FinalizedStatus))
+			fmt.Errorf(
+				"unknown status: %s",
+				req.FinalizedStatus,
+			),
+		)
 	}
 
 	return &api.FinalizeTransactionResponse{}, nil
@@ -208,5 +224,7 @@ func handleTransactionErrors(err error) error {
 
 func handleValidationError(err error) error {
 	return status.Error(
-		codes.InvalidArgument, fmt.Sprintf("ib-ledger-go: %s", err.Error()))
+		codes.InvalidArgument,
+		fmt.Sprintf("ib-ledger-go: %s", err.Error()),
+	)
 }

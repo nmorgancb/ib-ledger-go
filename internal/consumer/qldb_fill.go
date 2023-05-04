@@ -34,8 +34,7 @@ import (
 func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 	if err := validateEntryIds(f.Metadata); err != nil {
 		return fmt.Errorf(
-			"invalid entry ids provided - "+
-				"fillId: %s - %w",
+			"invalid entry ids provided - fillId: %s - %w",
 			f.FillId,
 			err,
 		)
@@ -54,8 +53,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 	sender, err := qt.Sender.ConvertToPostgresAccount()
 	if err != nil {
 		return fmt.Errorf(
-			"bad sender account - "+
-				"fillId: %s - senderId: %s - %w",
+			"bad sender account - fillId: %s - senderId: %s - %w",
 			f.FillId,
 			qt.Sender.Id,
 			err,
@@ -64,8 +62,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 	receiver, err := qt.Receiver.ConvertToPostgresAccount()
 	if err != nil {
 		return fmt.Errorf(
-			"bad receiver account in fill - "+
-				"fill id: %s - receiver: %v - %w",
+			"bad receiver account in fill - fill id: %s - receiver: %v - %w",
 			f.Id,
 			f.Receiver,
 			err,
@@ -74,8 +71,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 	transaction, err := qt.ConvertToPostgresTransaction()
 	if err != nil {
 		return fmt.Errorf(
-			"bad transaction for fill - "+
-				"fill id: %s - transaction: %v - %w",
+			"bad transaction for fill - fill id: %s - transaction: %v - %w",
 			f.Id,
 			qt,
 			err,
@@ -132,8 +128,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 		f.CreatedAt,
 	); err != nil {
 		return fmt.Errorf(
-			"failed to insert entries - "+
-				"fillId: %s - transactionId: %s - %w",
+			"failed to insert entries - fillId: %s - transactionId: %s - %w",
 			f.FillId,
 			transaction.Id.String(),
 			err,
@@ -164,11 +159,11 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 			f.CreatedAt,
 		); err != nil {
 			return fmt.Errorf(
-				"failed to insert venueFee entries - "+
-					"fillId: %s - transactionId: %s - %w",
+				"failed to insert venueFee entries - fillId: %s - transactionId: %s - %w",
 				f.FillId,
 				transaction.Id.String(),
-				err)
+				err,
+            )
 		}
 	}
 
@@ -196,8 +191,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 			f.CreatedAt,
 		); err != nil {
 			return fmt.Errorf(
-				"failed to insert fee entries - "+
-					"fillId: %s - transactionId - %s - %w",
+				"failed to insert fee entries - fillId: %s - transactionId - %s - %w",
 				f.FillId,
 				transaction.Id.String(),
 				err,

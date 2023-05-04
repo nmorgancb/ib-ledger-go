@@ -31,17 +31,24 @@ type Repository struct {
 	App    *config.AppConfig
 }
 
-func setupService(l *log.Entry, a *config.AppConfig, cfg *aws.Config) *qldbdriver.QLDBDriver {
+func setupService(
+	l *log.Entry,
+	a *config.AppConfig,
+	cfg *aws.Config,
+) *qldbdriver.QLDBDriver {
 	qldbSession := qldbsession.NewFromConfig(
-		*cfg, func(options *qldbsession.Options) {
+		*cfg,
+		func(options *qldbsession.Options) {
 			options.Region = a.DevRegion
-		})
+		},
+	)
 	driver, err := qldbdriver.New(
 		a.QldbName,
 		qldbSession,
 		func(options *qldbdriver.DriverOptions) {
 			options.LoggerVerbosity = qldbdriver.LogInfo
-		})
+		},
+	)
 	if err != nil {
 		l.Fatalf("failed to initialize qldbdriver: %v", err)
 	}

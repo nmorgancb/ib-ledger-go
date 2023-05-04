@@ -55,8 +55,7 @@ func FillOrder(req *api.PostFillRequest) error {
 
 			if err != nil {
 				return nil, fmt.Errorf(
-					"failed to query ledger for fill - "+
-						"fillId: %s - transactionId: %s - err: %w",
+					"failed to query ledger for fill - fillId: %s - transactionId: %s - err: %w",
 					fillId,
 					t.VenueOrderId,
 					err,
@@ -70,8 +69,7 @@ func FillOrder(req *api.PostFillRequest) error {
 			filledValue, err := ion.ParseDecimal(req.FilledValue)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"failed to parse filledValue into ion decimal"+
-						" - filledValue: %s - err: %w",
+					"failed to parse filledValue into ion decimal - filledValue: %s - err: %w",
 					req.FilledValue,
 					err,
 				)
@@ -79,8 +77,7 @@ func FillOrder(req *api.PostFillRequest) error {
 			filledQuantity, err := ion.ParseDecimal(req.FilledQuantity)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"failed to parse filledQuantity into ion decimal"+
-						" - filledQuantity: %s - err: %w",
+					"failed to parse filledQuantity into ion decimal - filledQuantity: %s - err: %w",
 					req.FilledQuantity,
 					err,
 				)
@@ -141,8 +138,7 @@ func FillOrder(req *api.PostFillRequest) error {
 
 			if _, err := txn.Execute("INSERT INTO Ledger ?", fill); err != nil {
 				return nil, fmt.Errorf(
-					"failed to insert fill into ledger"+
-						" - fill: %v - error: %w",
+					"failed to insert fill into ledger - fill: %v - error: %w",
 					fill,
 					err,
 				)
@@ -166,10 +162,10 @@ func FillOrder(req *api.PostFillRequest) error {
 			}
 
 			return nil, nil
-		})
+		},
+	)
 	if err != nil {
-		return fmt.Errorf("failed qldb fill operations "+
-			"- fillId: %s - error: %w",
+		return fmt.Errorf("failed qldb fill operations - fillId: %s - error: %w",
 			req.FillId,
 			err,
 		)
@@ -215,8 +211,7 @@ func handleFeeFills(
 	fee, err := ion.ParseDecimal(amount)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to parse fee into ion decimal"+
-				" - fee: %s - err: %w",
+			"failed to parse fee into ion decimal - fee: %s - err: %w",
 			amount,
 			err,
 		)
@@ -243,8 +238,7 @@ func handleFeeFills(
 
 	if err := creditAccountUpdate(txn, f, feeInt); err != nil {
 		return nil, fmt.Errorf(
-			"failed to update account balance for fee"+
-				" - accountId: - %s - error: %w",
+			"failed to update account balance for fee - accountId: - %s - error: %w",
 			f.Id,
 			err,
 		)
@@ -333,8 +327,7 @@ func processFillAccountAndHoldUpdates(
 	); err != nil {
 
 		return fmt.Errorf(
-			"failed to update hold for fill "+
-				"- transactionId: - %s - error: %w",
+			"failed to update hold for fill - transactionId: - %s - error: %w",
 			t.Id,
 			err,
 		)

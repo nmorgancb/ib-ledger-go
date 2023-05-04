@@ -45,16 +45,14 @@ func (r Repository) DeleteSqsMsg(
 	receipt string,
 ) error {
 
-	_, err := r.Svc.DeleteMessage(
+	if _, err := r.Svc.DeleteMessage(
 		ctx,
 		&sqs.DeleteMessageInput{
 			QueueUrl:      aws.String(r.App.QueueUrl),
 			ReceiptHandle: aws.String(receipt),
 		},
-	)
-
-	if err != nil {
-		return fmt.Errorf("unable to delete msg: %v", err)
+	);  err != nil {
+		return fmt.Errorf("unable to delete msg: %w", err)
 	}
 	return nil
 }
