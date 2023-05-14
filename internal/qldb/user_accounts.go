@@ -31,11 +31,11 @@ const (
 )
 
 func GetUserAccounts(
-	ctx context.Context, 
-    userId string,
+	ctx context.Context,
+	userId string,
 ) ([]*model.QldbAccount, error) {
 	data, err := Repo.Driver.Execute(
-        ctx,
+		ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			result, err := txn.Execute(getAccountsByUserIdSql, userId)
 			if err != nil {
@@ -58,7 +58,7 @@ func GetUserAccounts(
 			}
 			return output, nil
 		},
-    )
+	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"failed to get accounts by userId from qldb - userId: %s - %w",
@@ -84,7 +84,7 @@ func GetAccount(
 	var err error
 
 	res, err = Repo.Driver.Execute(
-        ctx,
+		ctx,
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			result, err := txn.Execute(getAccountByIdSql, accountId)
 			if err != nil {
@@ -110,7 +110,7 @@ func GetAccount(
 
 			return acct, err
 		},
-    )
+	)
 
 	if err != nil {
 		return nil, fmt.Errorf(

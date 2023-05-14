@@ -154,8 +154,7 @@ func (s *Service) PostFill(
 		return nil, handleValidationError(err)
 	}
 
-	err := qldb.FillOrder(req)
-	if err != nil {
+	if err := qldb.FillOrder(req); err != nil {
 		return nil, fmt.Errorf("ib-ledger-go: %w", err)
 	}
 	return &api.PostFillResponse{}, nil

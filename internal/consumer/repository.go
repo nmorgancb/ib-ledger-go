@@ -51,7 +51,7 @@ func (r Repository) DeleteSqsMsg(
 			QueueUrl:      aws.String(r.App.QueueUrl),
 			ReceiptHandle: aws.String(receipt),
 		},
-	);  err != nil {
+	); err != nil {
 		return fmt.Errorf("unable to delete msg: %w", err)
 	}
 	return nil

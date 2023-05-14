@@ -85,10 +85,10 @@ func InsertAccountBalance(
 	id := account.AccountUUID
 	userId := account.UserId
 	currency := account.Currency
-	var accountId []*uuid.UUID
+	var accountIds []*uuid.UUID
 	if err := Repo.Query(
 		ctx,
-		&accountId,
+		&accountIds,
 		selectAccountById,
 		id,
 	); err != nil {
@@ -102,7 +102,7 @@ func InsertAccountBalance(
 	}
 
 	// If first attempt doesn't find an accountId, create the new account
-	if len(accountId) == 0 {
+	if len(accountIds) == 0 {
 		if err := Repo.Insert(
 			ctx,
 			insertAccountSql,
@@ -122,36 +122,36 @@ func InsertAccountBalance(
 	}
 
 	balance, err := utils.IonDecimalToBigInt(account.Balance)
-    if err != nil {
-        return fmt.Errorf(
-            "failed account balance update - bad balance: %s - %w",
-            account.Balance.String(),
-            err,
-        )
-    }
+	if err != nil {
+		return fmt.Errorf(
+			"failed account balance update - bad balance: %s - %w",
+			account.Balance.String(),
+			err,
+		)
+	}
 	hold, _ := utils.IonDecimalToBigInt(account.Hold)
-    if err != nil {
-        return fmt.Errorf(
-            "failed account balance update - bad hold: %s - %w",
-            account.Hold.String(),
-            err,
-        )
-    }
+	if err != nil {
+		return fmt.Errorf(
+			"failed account balance update - bad hold: %s - %w",
+			account.Hold.String(),
+			err,
+		)
+	}
 	available, _ := utils.IonDecimalToBigInt(account.Available)
-    if err != nil {
-        return fmt.Errorf(
-            "failed account balance update - bad available: %s - %w",
-            account.Available.String(),
-            err,
-        )
-    }
+	if err != nil {
+		return fmt.Errorf(
+			"failed account balance update - bad available: %s - %w",
+			account.Available.String(),
+			err,
+		)
+	}
 	idem := utils.GenerateIdemString(
 		id,
 		balance.String(),
 		hold.String(),
 		available.String(),
 		account.UpdatedAt.String(),
-    )
+	)
 
 	if err := Repo.Insert(
 		ctx,

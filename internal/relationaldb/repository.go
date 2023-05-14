@@ -50,12 +50,12 @@ func NewRepo(a *config.AppConfig, l *log.Entry) {
 	dbPassword := url.QueryEscape(dbCredsJson["password"].(string))
 
 	dbUrl := fmt.Sprintf(
-        "postgres://%s:%s@%s:%s/ledger", 
-        dbUsername,
-        dbPassword,
-        a.DbHostname,
-        a.DbPort,
-    )
+		"postgres://%s:%s@%s:%s/ledger",
+		dbUsername,
+		dbPassword,
+		a.DbHostname,
+		a.DbPort,
+	)
 
 	if a.IsLocalEnv() {
 		dbUrl += "?sslmode=disable"
@@ -72,18 +72,18 @@ func NewRepo(a *config.AppConfig, l *log.Entry) {
 }
 
 func (r *Repository) Query(
-    ctx context.Context, 
-    dest interface{}, 
-    query string, 
-    args ...interface{},
+	ctx context.Context,
+	dest interface{},
+	query string,
+	args ...interface{},
 ) error {
 	return pgxscan.Select(ctx, r.Pool, dest, query, args...)
 }
 
 func (r *Repository) Insert(
-    ctx context.Context, 
-    sql string, 
-    args ...interface{},
+	ctx context.Context,
+	sql string,
+	args ...interface{},
 ) error {
 	_, err := r.Pool.Exec(ctx, sql, args...)
 	return err

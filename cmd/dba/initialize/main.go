@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/amzn/ion-go/ion"
-    "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/qldbsession"
 	"github.com/awslabs/amazon-qldb-driver-go/v3/qldbdriver"
 	"github.com/coinbase-samples/ib-ledger-go/internal/config"
@@ -37,18 +37,18 @@ func main() {
 
 	cfg := app.GenerateAwsConfig(logrusLogger)
 
-    driver := initializeQldbDriver(logrusLogger, app, cfg)
-    defer driver.Shutdown(context.Background())
+	driver := initializeQldbDriver(logrusLogger, app, cfg)
+	defer driver.Shutdown(context.Background())
 
-    initializeLedgerTable(logrusLogger, driver)
+	initializeLedgerTable(logrusLogger, driver)
 
-    initializeAccountTableAndFeeAccounts(logrusLogger, driver, &app)
+	initializeAccountTableAndFeeAccounts(logrusLogger, driver, &app)
 }
 
 func initializeQldbDriver(
-    l *log.Entry,
-    app config.AppConfig, 
-    cfg aws.Config,
+	l *log.Entry,
+	app config.AppConfig,
+	cfg aws.Config,
 ) *qldbdriver.QLDBDriver {
 	qldbSession := qldbsession.NewFromConfig(cfg, func(options *qldbsession.Options) {
 		options.Region = app.DevRegion
@@ -59,11 +59,11 @@ func initializeQldbDriver(
 		func(options *qldbdriver.DriverOptions) {
 			options.LoggerVerbosity = qldbdriver.LogInfo
 		},
-    )
+	)
 	if err != nil {
 		l.Fatalf("failed to create qldbdriver: %v", err)
 	}
-    return driver
+	return driver
 }
 
 func initializeLedgerTable(l *log.Entry, driver *qldbdriver.QLDBDriver) {
@@ -82,7 +82,7 @@ func initializeLedgerTable(l *log.Entry, driver *qldbdriver.QLDBDriver) {
 				return nil, err
 			}
 
-            if _, err := txn.Execute(
+			if _, err := txn.Execute(
 				"CREATE INDEX ON Ledger (venueOrderId)",
 			); err != nil {
 				return nil, err
@@ -109,9 +109,9 @@ func initializeLedgerTable(l *log.Entry, driver *qldbdriver.QLDBDriver) {
 }
 
 func initializeAccountTableAndFeeAccounts(
-    l *log.Entry,
-    driver *qldbdriver.QLDBDriver,
-    app *config.AppConfig,
+	l *log.Entry,
+	driver *qldbdriver.QLDBDriver,
+	app *config.AppConfig,
 ) {
 	coinbaseUsdFeeAccount := &model.QldbAccount{
 		Id:          model.GenerateAccountId(app.CoinbaseUserId, "USD"),
@@ -154,7 +154,7 @@ func initializeAccountTableAndFeeAccounts(
 				return nil, err
 			}
 
-            _, err := txn.Execute(
+			_, err := txn.Execute(
 				"INSERT INTO Accounts ?",
 				[]*model.QldbAccount{
 					coinbaseUsdFeeAccount,

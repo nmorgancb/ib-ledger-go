@@ -152,7 +152,7 @@ func creditAccountUpdate(
 		ion.NewDecimal(available, 0, false),
 		time.Now(),
 		account.Id,
-    )
+	)
 	return err
 }
 

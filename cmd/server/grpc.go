@@ -108,9 +108,9 @@ func setupHealthCheckServer(s *grpc.Server) {
 	//setup health server
 	hs := health.NewServer()
 	hs.SetServingStatus(
-        "grpc.health.v1.Health", 
-        grpc_health_v1.HealthCheckResponse_SERVING,
-    )
+		"grpc.health.v1.Health",
+		grpc_health_v1.HealthCheckResponse_SERVING,
+	)
 	grpc_health_v1.RegisterHealthServer(s, hs)
 }
 

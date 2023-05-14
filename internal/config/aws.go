@@ -45,8 +45,8 @@ func (app AppConfig) GenerateAwsConfig(l *log.Entry) aws.Config {
 					) (aws.Endpoint, error) {
 						return aws.Endpoint{URL: app.LocalStackUrl}, nil
 					},
-                ),
-            ),
+				),
+			),
 			awsConfig.WithCredentialsProvider(
 				credentials.StaticCredentialsProvider{
 					Value: aws.Credentials{

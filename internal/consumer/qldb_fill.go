@@ -163,7 +163,7 @@ func writeQldbFill(ctx context.Context, f *model.QldbFill) error {
 				f.FillId,
 				transaction.Id.String(),
 				err,
-            )
+			)
 		}
 	}
 

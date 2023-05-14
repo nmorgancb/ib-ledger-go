@@ -53,9 +53,9 @@ func CreateTransactionAndPlaceHold(
 				return nil, err
 			}
 			available, err := utils.IonDecimalToBigInt(sender.Available)
-            if err != nil {
-                return nil, err
-            }
+			if err != nil {
+				return nil, err
+			}
 
 			if available.Cmp(amount) == -1 {
 				return nil, &InsufficientBalanceError{}
@@ -101,7 +101,7 @@ func FinalizeTransactionAndReleaseHold(
 				HoldUUID:   t.Hold.HoldUUID,
 			}
 			_, err = txn.Execute(
-                "UPDATE Ledger AS t SET t.hold = ?, t.status = ? WHERE t.id = ?",
+				"UPDATE Ledger AS t SET t.hold = ?, t.status = ? WHERE t.id = ?",
 				h,
 				status,
 				t.Id,
@@ -112,24 +112,24 @@ func FinalizeTransactionAndReleaseHold(
 			}
 
 			txnHoldAmount, err := utils.IonDecimalToBigInt(t.Hold.Amount)
-            if err != nil {
-                return nil, err
-            }
+			if err != nil {
+				return nil, err
+			}
 
-            err = holdBalanceUpdate(txn, sender, txnHoldAmount, true)
+			err = holdBalanceUpdate(txn, sender, txnHoldAmount, true)
 
 			return nil, err
 		},
-    )
+	)
 
-    if err != nil {
-        return fmt.Errorf(
-            "failed to finalize transaction and release hold - orderId: %s - status: %s - %w",
-            venueOrderId,
-            status,
-            err,
-        )
-    }
+	if err != nil {
+		return fmt.Errorf(
+			"failed to finalize transaction and release hold - orderId: %s - status: %s - %w",
+			venueOrderId,
+			status,
+			err,
+		)
+	}
 	return nil
 }
 
@@ -141,7 +141,7 @@ func GetTransaction(
 		func(txn qldbdriver.Transaction) (interface{}, error) {
 			return getTransactionQldbOperation(txn, venueOrderId)
 		},
-    )
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -149,9 +149,9 @@ func GetTransaction(
 		return transaction, nil
 	} else {
 		return nil, fmt.Errorf(
-            "unable to cast data to transaction type: %v",
-            data,
-        )
+			"unable to cast data to transaction type: %v",
+			data,
+		)
 	}
 }
 
