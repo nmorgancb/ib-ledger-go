@@ -137,7 +137,9 @@ func initializeAccountTableAndFeeAccounts(
 
 	if _, err := driver.Execute(
 		context.Background(),
-		func(txn qldbdriver.Transaction) (interface{}, error) {
+		func(
+			txn qldbdriver.Transaction,
+		) (interface{}, error) {
 			if _, err := txn.Execute("CREATE TABLE Accounts"); err != nil {
 				return nil, err
 			}
@@ -154,15 +156,17 @@ func initializeAccountTableAndFeeAccounts(
 				return nil, err
 			}
 
-			_, err := txn.Execute(
+			if _, err := txn.Execute(
 				"INSERT INTO Accounts ?",
 				[]*model.QldbAccount{
 					coinbaseUsdFeeAccount,
 					neoworksUsdFeeAccount,
 				},
-			)
+			); err != nil {
+				return nil, err
+			}
 
-			return nil, err
+			return nil, nil
 		},
 	); err != nil {
 		l.Fatalf("failed to create Accounts table: %v", err)
